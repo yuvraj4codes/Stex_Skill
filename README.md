@@ -4,6 +4,7 @@
 > A peer-to-peer skill exchange and collaboration ecosystem built exclusively for college and university students.
 
 [![PRD](https://img.shields.io/badge/Documentation-PRD%20v1.0-blue.svg)](./PRD.md)
+[![Roadmap](https://img.shields.io/badge/Engineering-STEPS%20Roadmap-purple.svg)](./STEPS.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](#-license)
 [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Mobile%20(Future)-orange.svg)]()
 
@@ -48,19 +49,21 @@ STEX turns every student into both a **Learner** and a **Teacher**.
 ```text
 Stex_Skill/
 ├── PRD.md              # Product Requirements Document (Full Specifications)
+├── STEPS.md            # Sequential Implementation Steps for Developers
 ├── README.md           # Project Overview & Quick Start Guide
 └── (Source Code)       # Frontend & Backend application code (MVP in progress)
 ```
 
 ---
 
-## 📖 Product Requirements Document (PRD)
+## 📖 Documentation & Guidelines
 
-For in-depth functional specifications, database schema definitions, user personas, journey maps, and MVP scope, check out the complete **[Product Requirements Document (PRD.md)](./PRD.md)**.
+* **[Product Requirements Document (PRD.md)](./PRD.md)** — In-depth functional specifications, database schema definitions, user personas, journey maps, and MVP scope.
+* **[Engineering Roadmap & Implementation Steps (STEPS.md)](./STEPS.md)** — Sequential step-by-step development guide for engineering teams.
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap Overview
 
 - [x] **Phase 1: Product Definition & Specifications**
 - [ ] **Phase 2: MVP Frontend Development** (Authentication, User Profiles, Skill Cards)
