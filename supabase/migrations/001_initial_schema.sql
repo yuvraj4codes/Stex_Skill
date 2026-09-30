@@ -324,7 +324,8 @@ FROM public.profiles;
 
 -- Ensure it's only readable by authenticated users
 GRANT SELECT ON public.public_profiles TO authenticated;
-REVOKE ALL ON public.public_profiles FROM anon, public;
+REVOKE SELECT ON public.public_profiles FROM anon;
+REVOKE SELECT ON public.public_profiles FROM public;
 
 -- =============================================================
 -- TRIGGERS: Project Member Count & Connection Immutability
