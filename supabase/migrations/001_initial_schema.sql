@@ -10,11 +10,11 @@
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.profiles (
   id             UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  full_name      TEXT NOT NULL,
-  email          TEXT NOT NULL,
-  college        TEXT NOT NULL,
-  course         TEXT NOT NULL,
-  year_semester  TEXT NOT NULL,
+  full_name      TEXT NOT NULL CHECK (length(trim(full_name)) > 0),
+  email          TEXT NOT NULL CHECK (length(trim(email)) > 0),
+  college        TEXT NOT NULL CHECK (length(trim(college)) > 0),
+  course         TEXT NOT NULL CHECK (length(trim(course)) > 0),
+  year_semester  TEXT NOT NULL CHECK (length(trim(year_semester)) > 0),
   bio            TEXT,
   avatar_url     TEXT,
   availability   TEXT CHECK (availability IN ('Available', 'Busy', 'Weekends Only')),
@@ -81,10 +81,11 @@ CREATE TABLE IF NOT EXISTS public.projects (
   owner_id        UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   title           TEXT NOT NULL,
   description     TEXT NOT NULL,
-  team_size       INTEGER NOT NULL,
+  team_size       INTEGER NOT NULL CHECK (team_size > 0),
   current_members INTEGER NOT NULL DEFAULT 1,
   status          TEXT NOT NULL CHECK (status IN ('open', 'in_progress', 'completed')),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (current_members <= team_size)
 );
 
 -- ─────────────────────────────────────────────────────────────
@@ -183,8 +184,8 @@ ALTER TABLE public.notifications   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reports         ENABLE ROW LEVEL SECURITY;
 
 -- profiles
-CREATE POLICY "profiles: authenticated can read all"
-  ON public.profiles FOR SELECT TO authenticated USING (TRUE);
+CREATE POLICY "profiles: user can read own profile"
+  ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
 CREATE POLICY "profiles: user can insert own profile"
   ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
 CREATE POLICY "profiles: user can update own profile"
@@ -289,11 +290,11 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, email, college, course, year_semester)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''),
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'college', ''),
-    COALESCE(NEW.raw_user_meta_data->>'course', ''),
-    COALESCE(NEW.raw_user_meta_data->>'year_semester', '')
+    NULLIF(TRIM(NEW.raw_user_meta_data->>'college'), ''),
+    NULLIF(TRIM(NEW.raw_user_meta_data->>'course'), ''),
+    NULLIF(TRIM(NEW.raw_user_meta_data->>'year_semester'), '')
   );
   RETURN NEW;
 END;
@@ -303,6 +304,75 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================================
+-- PUBLIC PROFILES VIEW (Discovery)
+-- =============================================================
+CREATE OR REPLACE VIEW public.public_profiles AS
+SELECT
+  id,
+  full_name,
+  college,
+  course,
+  year_semester,
+  bio,
+  avatar_url,
+  availability,
+  looking_for,
+  created_at
+FROM public.profiles;
+
+-- Ensure it's only readable by authenticated users
+GRANT SELECT ON public.public_profiles TO authenticated;
+REVOKE ALL ON public.public_profiles FROM anon, public;
+
+-- =============================================================
+-- TRIGGERS: Project Member Count & Connection Immutability
+-- =============================================================
+CREATE OR REPLACE FUNCTION public.update_project_member_count()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.status = 'accepted' THEN
+      UPDATE public.projects SET current_members = current_members + 1 WHERE id = NEW.project_id;
+    END IF;
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF OLD.status != 'accepted' AND NEW.status = 'accepted' THEN
+      UPDATE public.projects SET current_members = current_members + 1 WHERE id = NEW.project_id;
+    ELSIF OLD.status = 'accepted' AND NEW.status != 'accepted' THEN
+      UPDATE public.projects SET current_members = current_members - 1 WHERE id = NEW.project_id;
+    END IF;
+  ELSIF TG_OP = 'DELETE' THEN
+    IF OLD.status = 'accepted' THEN
+      UPDATE public.projects SET current_members = current_members - 1 WHERE id = OLD.project_id;
+    END IF;
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_project_member_change ON public.project_members;
+CREATE TRIGGER on_project_member_change
+  AFTER INSERT OR UPDATE OF status OR DELETE ON public.project_members
+  FOR EACH ROW EXECUTE FUNCTION public.update_project_member_count();
+
+
+CREATE OR REPLACE FUNCTION public.protect_connection_fields()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.sender_id = OLD.sender_id;
+  NEW.receiver_id = OLD.receiver_id;
+  NEW.created_at = OLD.created_at;
+  NEW.intro_message = OLD.intro_message;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS enforce_connection_immutability ON public.connections;
+CREATE TRIGGER enforce_connection_immutability
+  BEFORE UPDATE ON public.connections
+  FOR EACH ROW EXECUTE FUNCTION public.protect_connection_fields();
+
 
 -- =============================================================
 -- SEED: Default Skill Catalog

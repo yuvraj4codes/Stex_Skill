@@ -1,14 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn(
-    '[STEX Security Notice] Supabase environment variables missing. Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are defined in .env.'
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'STEX Configuration Error: Missing Supabase environment variables. ' +
+    'Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file.'
   );
 }
 
-// Client initialized strictly using the public anonymous key.
-// NEVER expose the service-role key in client-side code.
+/**
+ * Isolated Supabase Client instance for STEX.
+ * Uses public browser anon key only.
+ */
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

@@ -14,11 +14,19 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('STEX Auth Error: Failed to get initial session.', error);
+        }
+        setSession(session ?? null);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('STEX Auth Error: Initialization failed.', err);
+        setLoading(false); // Ensure loading is cleared even on exception
+      });
 
     // Listen for auth state changes
     const {
@@ -29,8 +37,12 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, []);
+
+  // ── Auth Actions ──────────────────────────────────────────
 
   const signUp = async ({ email, password, fullName, college, course, yearSemester }) => {
     const { data, error } = await supabase.auth.signUp({
@@ -54,19 +66,20 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) console.error('STEX Auth Error: Sign out failed.', error);
+      return { error };
+    } catch (err) {
+      console.error('STEX Auth Error: Sign out exception.', err);
+      return { error: err };
+    }
   };
 
   const resetPassword = async (email) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    return { data, error };
-  };
-
-  const updatePassword = async (newPassword) => {
-    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
     return { data, error };
   };
 
@@ -78,7 +91,6 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     resetPassword,
-    updatePassword,
     isAuthenticated: !!user,
   };
 
