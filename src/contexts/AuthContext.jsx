@@ -65,6 +65,11 @@ export function AuthProvider({ children }) {
     return { data, error };
   };
 
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    return { data, error };
+  };
+
   const value = {
     user,
     session,
@@ -73,6 +78,7 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     resetPassword,
+    updatePassword,
     isAuthenticated: !!user,
   };
 
