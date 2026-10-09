@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
           {!sent ? (
             <>
               <h1 className="text-2xl font-bold text-white mb-1">Reset password</h1>
-              <p className="text-slate-400 text-sm mb-7">Enter your email address and we'll send you a reset link.</p>
+              <p className="text-slate-400 text-sm mb-7">Enter your email address and we&apos;ll send you a reset link.</p>
               {error && (
                 <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
                   <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 className="w-7 h-7 text-emerald-400" />
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Check your inbox</h2>
-              <p className="text-slate-400 text-sm">If an account exists for <span className="text-indigo-400">{email}</span>, you'll receive a password reset link shortly.</p>
+              <p className="text-slate-400 text-sm">If an account exists for <span className="text-indigo-400">{email}</span>, you&apos;ll receive a password reset link shortly.</p>
             </div>
           )}
           <Link to="/login" className="flex items-center justify-center gap-2 mt-7 text-sm text-slate-400 hover:text-slate-300 transition-colors">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, ArrowRight, ShieldCheck, Users, MessageSquare, FolderKanban } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Users, MessageSquare, FolderKanban } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function HomePage() {

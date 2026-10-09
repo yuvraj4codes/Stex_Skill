@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
   GraduationCap, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, CheckCircle2,
@@ -46,7 +46,6 @@ function Field({ label, id, name, type, placeholder, value, onChange, autoComple
 
 export default function RegisterPage() {
   const { signUp } = useAuth();
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ fullName: '', email: '', college: '', course: '', yearSemester: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -93,7 +92,7 @@ export default function RegisterPage() {
             <CheckCircle2 className="w-8 h-8 text-emerald-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-3">Check your email!</h2>
-          <p className="text-slate-400 text-sm mb-6">We've sent a verification link to <span className="text-indigo-400 font-medium">{form.email}</span>. Click the link to activate your STEX account.</p>
+          <p className="text-slate-400 text-sm mb-6">We&apos;ve sent a verification link to <span className="text-indigo-400 font-medium">{form.email}</span>. Click the link to activate your STEX account.</p>
           <Link to="/login" className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">Back to Sign In</Link>
         </div>
       </div>
@@ -174,7 +173,7 @@ export default function RegisterPage() {
                   value={form.confirmPassword} onChange={handleChange} placeholder="Re-enter password"
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm" />
               </div>
-              <p className="text-xs text-slate-500">By creating an account you agree to STEX's <span className="text-indigo-400">Terms of Service</span> and <span className="text-indigo-400">Privacy Policy</span>.</p>
+              <p className="text-xs text-slate-500">By creating an account you agree to STEX&apos;s <span className="text-indigo-400">Terms of Service</span> and <span className="text-indigo-400">Privacy Policy</span>.</p>
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => { setStep(1); setError(''); }}
                   className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:border-slate-600 hover:text-white transition-all">Back</button>
