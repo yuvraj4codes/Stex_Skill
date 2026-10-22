@@ -152,7 +152,8 @@ BEGIN
   SELECT owner_id, team_size, current_members
   INTO v_owner_id, v_team_size, v_current_members
   FROM public.projects
-  WHERE id = OLD.project_id;
+  WHERE id = OLD.project_id
+  FOR UPDATE;
 
   -- Only project owner can approve or reject
   IF auth.uid() <> v_owner_id THEN

@@ -129,6 +129,8 @@ assert(sql003.includes('chk_members_lte_team_size'),
   '003: CHECK current_members <= team_size');
 assert(sql003.includes('chk_members_gte_one'),
   '003: CHECK current_members >= 1');
+assert(sql003.includes('FOR UPDATE'),
+  '003: row-level lock (FOR UPDATE) protects project member count concurrency');
 
 // Confirm email is NOT in view definition of 002 or 003
 const viewMatch002 = sql002.match(/CREATE OR REPLACE VIEW public\.public_profiles[\s\S]*?FROM public\.profiles/);
